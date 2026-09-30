@@ -1,0 +1,20 @@
+{% extends "admin/base.html" %}
+{% from "_macros.html" import csrf %}
+{% block admin %}
+<h1 class="mb-3" style="font-size:2.4rem">{{ 'Edit' if s else 'Add' }} service</h1>
+<form method="post" enctype="multipart/form-data" class="panel" style="max-width:760px">{{ csrf() }}
+  {% set f = request.form if request.method == 'POST' else {} %}
+  <div class="row g-3">
+    <div class="col-md-7"><label class="form-label" for="name">Name</label><input class="form-control" id="name" name="name" required maxlength="120" value="{{ f.get('name', s.name if s else '') }}"></div>
+    <div class="col-md-5"><label class="form-label" for="category_id">Category</label><select class="form-select" id="category_id" name="category_id" required>
+      {% for c in categories %}<option value="{{ c.id }}" {{ 'selected' if (f.get('category_id')|string == c.id|string) or (not f and s and s.category_id == c.id) }}>{{ c.name }}</option>{% endfor %}</select></div>
+    <div class="col-12"><label class="form-label" for="description">Description</label><textarea class="form-control" id="description" name="description" rows="3" maxlength="2000">{{ f.get('description', s.description if s else '') }}</textarea></div>
+    <div class="col-md-4"><label class="form-label" for="duration">Duration (minutes)</label><input class="form-control" id="duration" type="number" min="15" max="480" step="15" name="duration" required value="{{ f.get('duration', s.duration if s else 60) }}"></div>
+    <div class="col-md-4"><label class="form-label" for="price">Price (&#8377;)</label><input class="form-control" id="price" type="number" min="1" step="0.01" name="price" required value="{{ f.get('price', s.price if s else '') }}"></div>
+    <div class="col-md-4"><label class="form-label" for="discount_price">Discount price (&#8377;)</label><input class="form-control" id="discount_price" type="number" min="0" step="0.01" name="discount_price" value="{{ f.get('discount_price', s.discount_price if s and s.discount_price else '') }}"></div>
+    <div class="col-md-8"><label class="form-label" for="image">Image</label><input class="form-control" id="image" type="file" name="image" accept="image/png,image/jpeg,image/webp"><div class="form-text">Leave empty to keep the current image.</div></div>
+    <div class="col-md-4 d-flex align-items-end"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" id="active" name="active" {{ 'checked' if (not s) or s.active }}><label class="form-check-label" for="active">Active (shown to customers)</label></div></div>
+  </div>
+  <button class="btn btn-spruce mt-4">Save service</button> <a class="btn btn-link mt-4" href="{{ url_for('admin_services') }}">Cancel</a>
+</form>
+{% endblock %}

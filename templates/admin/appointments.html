@@ -1,0 +1,24 @@
+{% extends "admin/base.html" %}
+{% from "_macros.html" import csrf, badge %}
+{% block admin %}
+<h1 class="mb-3" style="font-size:2.4rem">Appointments</h1>
+<form class="row g-2 mb-3" method="get">
+  <div class="col-md-4"><input class="form-control" name="q" value="{{ term }}" placeholder="Booking no or customer" aria-label="Search"></div>
+  <div class="col-md-3"><select class="form-select" name="status" aria-label="Status"><option value="">All statuses</option>{% for s in STATUSES %}<option {{ 'selected' if s == status }}>{{ s }}</option>{% endfor %}</select></div>
+  <div class="col-md-3"><input class="form-control" type="date" name="date" value="{{ day }}" aria-label="Date"></div>
+  <div class="col-md-2 d-grid"><button class="btn btn-spruce">Filter</button></div>
+</form>
+<div class="panel table-responsive"><table class="table mb-0"><thead><tr><th>Booking</th><th>Customer</th><th>Service and staff</th><th>When</th><th class="text-end">Amount</th><th>Payment</th><th>Status</th><th></th></tr></thead><tbody>
+{% for a in items %}<tr>
+  <td>{{ a.booking_no }}</td><td>{{ a.customer.name }}<div class="small text-muted">{{ a.customer.phone }}</div></td>
+  <td>{{ a.service_names }}<div class="small text-muted">{{ a.staff.name }}{% if a.notes %} &middot; Note: {{ a.notes }}{% endif %}</div></td>
+  <td>{{ a.date|fdate }}<div class="small text-muted">{{ a.time_label }} to {{ a.end_label }}</div></td>
+  <td class="text-end">&#8377;{{ a.total|money }}<div class="small text-muted">due &#8377;{{ a.remaining|money }}</div></td>
+  <td>{{ badge(a.payment_status) }}</td>
+  <td><form method="post" action="{{ url_for('admin_appointment_status', appt_id=a.id) }}" class="d-flex gap-1">{{ csrf() }}
+    <select name="status" class="form-select form-select-sm" style="min-width:125px" aria-label="Change status">{% for s in STATUSES %}<option {{ 'selected' if s == a.status }}>{{ s }}</option>{% endfor %}</select>
+    <button class="btn btn-sm btn-spruce">Save</button></form></td>
+  <td class="text-nowrap">{% if a.can_modify %}<a class="btn btn-sm btn-outline-spruce" href="{{ url_for('reschedule', appt_id=a.id) }}">Reschedule</a> {% endif %}<a class="btn btn-sm btn-outline-spruce" target="_blank" href="{{ url_for('invoice', appt_id=a.id) }}">Invoice</a></td>
+</tr>{% else %}<tr><td colspan="8" class="text-muted">No appointments found.</td></tr>{% endfor %}
+</tbody></table></div>
+{% endblock %}

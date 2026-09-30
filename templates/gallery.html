@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Gallery | {{ site.salon_name }}{% endblock %}
+{% block content %}
+<section class="section"><div class="container">
+  <h1 class="mb-4" style="font-size:clamp(2.2rem,4vw,3.2rem)">Gallery</h1>
+  {% if items %}<div class="gallery-grid">{% for g in items %}<figure><img src="{{ url_for('static', filename='uploads/' + g.image) }}" alt="{{ g.title or 'Salon photo' }}" loading="lazy">{% if g.title %}<figcaption>{{ g.title }}</figcaption>{% endif %}</figure>{% endfor %}</div>
+  {% else %}<div class="panel text-muted">Photos are on the way.</div>{% endif %}
+</div></section>
+{% endblock %}

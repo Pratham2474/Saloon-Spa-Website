@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}First-time setup{% endblock %}
+{% block content %}
+<div class="container"><div class="auth-card panel">
+  <h2>Create the admin account</h2>
+  <p class="text-muted">This page only works until the first admin exists. Enter the setup key shown in the console where you started the app.</p>
+  <form method="post">{{ csrf() }}
+    <label class="form-label" for="setup_key">Setup key</label><input class="form-control mb-3" id="setup_key" name="setup_key" required autocomplete="off">
+    <label class="form-label" for="name">Your name</label><input class="form-control mb-3" id="name" name="name" required>
+    <label class="form-label" for="email">Admin email</label><input class="form-control mb-3" id="email" type="email" name="email" required>
+    <label class="form-label" for="password">Password <small class="text-muted">(10+ characters)</small></label><input class="form-control mb-3" id="password" type="password" name="password" required minlength="10" autocomplete="new-password">
+    <label class="form-label" for="confirm">Confirm password</label><input class="form-control mb-4" id="confirm" type="password" name="confirm" required minlength="10" autocomplete="new-password">
+    <button class="btn btn-spruce w-100">Create admin</button>
+  </form>
+</div></div>
+{% endblock %}

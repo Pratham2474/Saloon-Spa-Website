@@ -1,0 +1,15 @@
+{% extends "admin/base.html" %}
+{% from "_macros.html" import csrf %}
+{% block admin %}
+<h1 class="mb-3" style="font-size:2.4rem">Gallery</h1>
+<form method="post" enctype="multipart/form-data" class="panel mb-4">{{ csrf() }}<h3>Upload image</h3>
+  <div class="row g-2"><div class="col-md-4"><input class="form-control" name="title" placeholder="Caption (optional)" maxlength="100" aria-label="Caption"></div>
+    <div class="col-md-5"><input class="form-control" type="file" name="image" accept="image/png,image/jpeg,image/webp" required aria-label="Image"></div>
+    <div class="col-md-3 d-grid"><button class="btn btn-spruce">Upload</button></div></div></form>
+<div class="row g-3">{% for g in items %}<div class="col-6 col-md-4 col-xl-3"><div class="panel p-2 h-100">
+  <img src="{{ url_for('static', filename='uploads/' + g.image) }}" alt="{{ g.title }}" class="w-100 rounded-3" style="aspect-ratio:4/3;object-fit:cover">
+  <div class="d-flex justify-content-between align-items-center mt-2"><small>{{ g.title or 'Untitled' }}</small><span class="badge text-bg-{{ 'success' if g.approved else 'secondary' }}">{{ 'Shown' if g.approved else 'Hidden' }}</span></div>
+  <div class="d-flex gap-1 mt-2"><form method="post" action="{{ url_for('admin_gallery_action', item_id=g.id, action='toggle') }}">{{ csrf() }}<button class="btn btn-sm btn-outline-spruce">{{ 'Hide' if g.approved else 'Show' }}</button></form>
+    <form method="post" action="{{ url_for('admin_gallery_action', item_id=g.id, action='delete') }}" onsubmit="return confirm('Delete image?')">{{ csrf() }}<button class="btn btn-sm btn-outline-danger">Delete</button></form></div></div></div>
+{% else %}<p class="text-muted">No images yet.</p>{% endfor %}</div>
+{% endblock %}

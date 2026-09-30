@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, badge %}
+{% block title %}Pay by UPI | {{ site.salon_name }}{% endblock %}
+{% block content %}
+<section class="section"><div class="container" style="max-width:980px">
+  <h1 style="font-size:clamp(2rem,4vw,2.8rem)">Pay by UPI</h1>
+  <div class="row g-4 mt-1">
+    <div class="col-md-5 text-center">
+      <div class="panel">
+        <div class="qr-box"><img src="{{ url_for('qr', payment_id=p.id) }}" alt="UPI QR code for &#8377;{{ p.amount|money }}"></div>
+        <div class="display-font fs-1 mt-2">&#8377;{{ p.amount|money }}</div>
+        <div class="text-muted small">Pay to <strong>{{ site.upi_id }}</strong><br>Reference: {{ p.appointment.booking_no }}</div>
+        <a class="btn btn-outline-spruce mt-3 d-md-none" href="{{ upi_uri }}">Open UPI app</a>
+      </div>
+    </div>
+    <div class="col-md-7">
+      <div class="panel">
+        <p class="mb-1">Payment status: {{ badge(p.status) }}</p>
+        <ol class="text-muted"><li>Scan the QR code with any UPI app and pay the exact amount.</li><li>Copy the UTR / transaction ID from the app.</li><li>Enter it below. The salon checks it and confirms your booking.</li></ol>
+        {% if editable %}
+        <form method="post" enctype="multipart/form-data">{{ csrf() }}
+          <label class="form-label" for="utr">UTR / Transaction ID</label>
+          <input class="form-control mb-3" id="utr" name="utr" value="{{ p.utr }}" required minlength="8" maxlength="30" autocomplete="off" placeholder="e.g. 412345678901">
+          <label class="form-label" for="proof">Payment screenshot <small class="text-muted">(optional, PNG/JPG up to 5 MB)</small></label>
+          <input class="form-control mb-3" id="proof" type="file" name="proof" accept="image/png,image/jpeg,image/webp">
+          <button class="btn btn-glow">Submit payment details</button>
+        </form>
+        {% else %}<div class="alert alert-success mb-0">This payment is {{ p.status|lower }}.</div>{% endif %}
+      </div>
+    </div>
+  </div>
+</div></section>
+{% endblock %}

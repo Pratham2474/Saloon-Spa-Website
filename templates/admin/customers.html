@@ -1,0 +1,13 @@
+{% extends "admin/base.html" %}
+{% from "_macros.html" import csrf %}
+{% block admin %}
+<h1 class="mb-3" style="font-size:2.4rem">Customers</h1>
+<form class="row g-2 mb-3" method="get"><div class="col-md-6"><input class="form-control" name="q" value="{{ term }}" placeholder="Search name, email or phone" aria-label="Search"></div><div class="col-md-2 d-grid"><button class="btn btn-spruce">Search</button></div></form>
+<div class="panel table-responsive"><table class="table mb-0"><thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Joined</th><th>Bookings</th><th>Status</th><th></th></tr></thead><tbody>
+{% for u in items %}<tr><td>{{ u.name }}</td><td>{{ u.email }}</td><td>{{ u.phone }}</td><td>{{ u.created_at.strftime('%d %b %Y') }}</td><td>{{ u.appointments|length }}</td>
+  <td><span class="badge text-bg-{{ 'success' if u.active else 'secondary' }}">{{ 'Active' if u.active else 'Deactivated' }}</span></td>
+  <td class="text-nowrap d-flex gap-1">
+    <form method="post" action="{{ url_for('admin_customer_toggle', user_id=u.id) }}">{{ csrf() }}<button class="btn btn-sm btn-outline-spruce">{{ 'Deactivate' if u.active else 'Activate' }}</button></form>
+    <form method="post" action="{{ url_for('admin_customer_delete', user_id=u.id) }}" onsubmit="return confirm('Delete this customer?')">{{ csrf() }}<button class="btn btn-sm btn-outline-danger">Delete</button></form></td></tr>
+{% else %}<tr><td colspan="7" class="text-muted">No customers yet.</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

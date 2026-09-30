@@ -1,0 +1,20 @@
+{% extends "admin/base.html" %}
+{% from "_macros.html" import csrf %}
+{% block admin %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2"><h1 class="mb-0" style="font-size:2.4rem">Services</h1><a class="btn btn-glow" href="{{ url_for('admin_service_form') }}">Add service</a></div>
+<div class="panel mb-4"><h3>Categories</h3>
+  <div class="d-flex flex-wrap gap-2 mb-3">{% for c in categories %}
+    <form method="post" action="{{ url_for('admin_category_delete', cat_id=c.id) }}" class="chip" onsubmit="return confirm('Delete category {{ c.name|e }}?')">{{ csrf() }}<i class="bi {{ c.icon }}"></i>{{ c.name }} ({{ c.services|length }})
+      <button class="btn btn-link p-0 text-danger" aria-label="Delete {{ c.name }}"><i class="bi bi-x-circle"></i></button></form>{% endfor %}</div>
+  <form method="post" action="{{ url_for('admin_category_add') }}" class="row g-2">{{ csrf() }}
+    <div class="col-md-5"><input class="form-control" name="name" placeholder="New category name" required maxlength="80"></div>
+    <div class="col-md-4"><input class="form-control" name="icon" placeholder="Icon, e.g. bi-heart (optional)"></div>
+    <div class="col-md-3 d-grid"><button class="btn btn-spruce">Add category</button></div></form></div>
+{% for c in categories %}{% if c.services %}
+<div class="panel mb-3"><h3>{{ c.name }}</h3><div class="table-responsive"><table class="table mb-0"><thead><tr><th>Service</th><th>Duration</th><th>Price</th><th>Discount</th><th>Status</th><th></th></tr></thead><tbody>
+  {% for s in c.services %}<tr><td>{{ s.name }}</td><td>{{ s.duration }} min</td><td>&#8377;{{ s.price|money }}</td><td>{{ ('&#8377;' ~ (s.discount_price|money))|safe if s.discount_price else '-' }}</td>
+    <td><span class="badge text-bg-{{ 'success' if s.active else 'secondary' }}">{{ 'Active' if s.active else 'Hidden' }}</span></td>
+    <td class="text-nowrap d-flex gap-1"><a class="btn btn-sm btn-outline-spruce" href="{{ url_for('admin_service_form', service_id=s.id) }}">Edit</a>
+      <form method="post" action="{{ url_for('admin_service_delete', service_id=s.id) }}" onsubmit="return confirm('Delete this service?')">{{ csrf() }}<button class="btn btn-sm btn-outline-danger">Delete</button></form></td></tr>{% endfor %}
+</tbody></table></div></div>{% endif %}{% endfor %}
+{% endblock %}

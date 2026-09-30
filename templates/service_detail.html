@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% from "_macros.html" import svc_card %}
+{% block title %}{{ s.name }} | {{ site.salon_name }}{% endblock %}
+{% block content %}
+<section class="section"><div class="container">
+  <nav aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{{ url_for('services') }}">Services</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('services', category=s.category_id) }}">{{ s.category.name }}</a></li><li class="breadcrumb-item active">{{ s.name }}</li></ol></nav>
+  <div class="row g-5">
+    <div class="col-lg-6"><div class="svc-card"><div class="thumb" style="aspect-ratio:4/3">
+      {% if s.image %}<img src="{{ url_for('static', filename='uploads/' + s.image) }}" alt="{{ s.name }}">{% endif %}</div></div></div>
+    <div class="col-lg-6">
+      <h1 style="font-size:clamp(2.2rem,4vw,3.2rem)">{{ s.name }}</h1>
+      <p class="fs-5 text-muted mt-3">{{ s.description }}</p>
+      <div class="panel my-4"><div class="row text-center">
+        <div class="col-6"><div class="text-muted small">Duration</div><div class="fs-4 fw-bold">{{ s.duration }} min</div></div>
+        <div class="col-6"><div class="text-muted small">Price</div><div class="fs-4 price">{% if s.has_discount %}<s>&#8377;{{ s.price|money }}</s>{% endif %}&#8377;{{ s.final_price|money }}</div></div>
+      </div></div>
+      <a class="btn btn-glow btn-lg" href="{{ url_for('book', service=s.id) }}">Book now</a>
+    </div>
+  </div>
+  {% if related %}<h2 class="mt-5 mb-3">More in {{ s.category.name }}</h2>
+  <div class="row g-4">{% for r in related %}<div class="col-md-6 col-lg-4">{{ svc_card(r) }}</div>{% endfor %}</div>{% endif %}
+</div></section>
+{% endblock %}

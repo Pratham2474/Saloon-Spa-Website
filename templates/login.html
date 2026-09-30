@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}Log in | {{ site.salon_name }}{% endblock %}
+{% block content %}
+<div class="container"><div class="auth-card panel">
+  <h2>Log in</h2>
+  <form method="post" class="mt-3">{{ csrf() }}
+    <label class="form-label" for="email">Email</label><input class="form-control mb-3" id="email" type="email" name="email" required autofocus autocomplete="email">
+    <label class="form-label" for="password">Password</label><input class="form-control mb-4" id="password" type="password" name="password" required autocomplete="current-password">
+    <button class="btn btn-spruce w-100">Log in</button>
+  </form>
+  <p class="text-center mt-3 mb-0 text-muted">New here? <a href="{{ url_for('register', next=request.args.get('next')) }}">Create an account</a></p>
+</div></div>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "admin/base.html" %}
+{% from "_macros.html" import csrf %}
+{% block admin %}
+<h1 class="mb-3" style="font-size:2.4rem">Coupons</h1>
+<form method="post" class="panel mb-4">{{ csrf() }}<h3>New coupon</h3>
+  <div class="row g-2">
+    <div class="col-md-3"><input class="form-control" name="code" placeholder="Code, e.g. DIWALI15" required maxlength="30" style="text-transform:uppercase" aria-label="Code"></div>
+    <div class="col-md-2"><select class="form-select" name="kind" aria-label="Type"><option value="percent">Percent (%)</option><option value="fixed">Fixed (&#8377;)</option></select></div>
+    <div class="col-md-2"><input class="form-control" type="number" step="0.01" min="0.01" name="value" placeholder="Value" required aria-label="Value"></div>
+    <div class="col-md-2"><input class="form-control" type="number" step="1" min="0" name="min_amount" placeholder="Min amount" aria-label="Minimum amount"></div>
+    <div class="col-md-2"><input class="form-control" type="date" name="expiry" min="{{ today }}" aria-label="Expiry date"></div>
+    <div class="col-md-1 d-grid"><button class="btn btn-spruce">Add</button></div></div></form>
+<div class="panel table-responsive"><table class="table mb-0"><thead><tr><th>Code</th><th>Discount</th><th>Minimum</th><th>Expires</th><th>Status</th><th></th></tr></thead><tbody>
+{% for c in items %}<tr><td><strong>{{ c.code }}</strong></td><td>{{ (c.value|round(1) ~ '%') if c.kind == 'percent' else ('&#8377;'|safe ~ c.value|money) }}</td><td>&#8377;{{ c.min_amount|money }}</td>
+  <td>{{ c.expiry.strftime('%d %b %Y') if c.expiry else 'No expiry' }}{% if c.expiry and c.expiry < today %} <span class="badge text-bg-danger">Expired</span>{% endif %}</td>
+  <td><span class="badge text-bg-{{ 'success' if c.active else 'secondary' }}">{{ 'Active' if c.active else 'Off' }}</span></td>
+  <td class="d-flex gap-1"><form method="post" action="{{ url_for('admin_coupon_action', coupon_id=c.id, action='toggle') }}">{{ csrf() }}<button class="btn btn-sm btn-outline-spruce">{{ 'Turn off' if c.active else 'Turn on' }}</button></form>
+    <form method="post" action="{{ url_for('admin_coupon_action', coupon_id=c.id, action='delete') }}" onsubmit="return confirm('Delete coupon?')">{{ csrf() }}<button class="btn btn-sm btn-outline-danger">Delete</button></form></td></tr>
+{% else %}<tr><td colspan="6" class="text-muted">No coupons yet.</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

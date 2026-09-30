@@ -1,0 +1,28 @@
+{% macro csrf() %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endmacro %}
+
+{% macro badge(status) %}
+{% set colors = {'Pending':'warning text-dark','Confirmed':'primary','Completed':'success','Cancelled':'secondary','Rescheduled':'info text-dark','No-show':'dark',
+  'Submitted':'info text-dark','Verified':'success','Failed':'danger','Refunded':'secondary','Paid':'success','Partially paid':'warning text-dark','Unpaid':'secondary',
+  'Awaiting verification':'info text-dark','Approved':'success','Hidden':'secondary'} %}
+<span class="badge rounded-pill text-bg-{{ colors.get(status, 'secondary') }}">{{ status }}</span>
+{% endmacro %}
+
+{% macro stars(n) %}<span class="stars" aria-label="{{ n }} out of 5">{% for i in range(1,6) %}<i class="bi {{ 'bi-star-fill' if i <= n else 'bi-star' }}"></i>{% endfor %}</span>{% endmacro %}
+
+{% macro svc_card(s) %}
+<div class="svc-card">
+  <a class="thumb" href="{{ url_for('service_detail', service_id=s.id) }}">
+    {% if s.image %}<img src="{{ url_for('static', filename='uploads/' + s.image) }}" alt="{{ s.name }}" loading="lazy">{% endif %}
+    {% if s.has_discount %}<span class="tag">Save {{ '%.0f'|format((s.price - s.discount_price) / s.price * 100) }}%</span>{% endif %}
+  </a>
+  <div class="body">
+    <small class="text-muted">{{ s.category.name }} &middot; {{ s.duration }} min</small>
+    <h3><a class="text-decoration-none" style="color:inherit" href="{{ url_for('service_detail', service_id=s.id) }}">{{ s.name }}</a></h3>
+    <p class="text-muted small flex-grow-1">{{ s.description|truncate(90) }}</p>
+    <div class="d-flex justify-content-between align-items-center">
+      <span class="price">{% if s.has_discount %}<s>&#8377;{{ s.price|money }}</s>{% endif %}&#8377;{{ s.final_price|money }}</span>
+      <a href="{{ url_for('book', service=s.id) }}" class="btn btn-sm btn-spruce">Book now</a>
+    </div>
+  </div>
+</div>
+{% endmacro %}

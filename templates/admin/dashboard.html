@@ -1,0 +1,24 @@
+{% extends "admin/base.html" %}
+{% from "_macros.html" import csrf, badge %}
+{% block admin %}
+<h1 class="mb-3" style="font-size:2.4rem">Dashboard</h1>
+{% if not site.upi_id %}<div class="alert alert-warning">UPI payments are off because no UPI ID is set. <a href="{{ url_for('admin_settings') }}">Add it in Settings</a>.</div>{% endif %}
+<div class="row g-3 mb-4">
+  {% for label, val in [('Customers', stats.customers), ('Bookings today', stats.today), ('Upcoming bookings', stats.upcoming), ('Completed', stats.completed), ('Revenue (verified)', '&#8377;' ~ (stats.revenue|money)), ('Pending payments', stats.pending_payments)] %}
+  <div class="col-6 col-md-4 col-xl-2"><div class="stat"><div class="num">{{ val|safe }}</div><div class="lbl">{{ label }}</div></div></div>{% endfor %}
+</div>
+<div class="row g-4">
+  <div class="col-xl-6"><div class="panel"><h3>Today's schedule</h3>
+    {% for a in todays %}<div class="d-flex justify-content-between border-bottom py-2"><div><strong>{{ a.time_label }}</strong> {{ a.customer.name }}<div class="small text-muted">{{ a.service_names }} with {{ a.staff.name }}</div></div>{{ badge(a.status) }}</div>
+    {% else %}<p class="text-muted mb-0">No appointments today.</p>{% endfor %}</div></div>
+  <div class="col-xl-6"><div class="panel"><h3>Payments to verify</h3>
+    {% for p in to_verify %}<div class="d-flex justify-content-between align-items-center border-bottom py-2 gap-2"><div>&#8377;{{ p.amount|money }} <small class="text-muted">{{ p.appointment.booking_no }}</small><div class="small text-muted">UTR {{ p.utr }}</div></div>
+      <div class="d-flex gap-1">
+        <form method="post" action="{{ url_for('admin_payment_action', payment_id=p.id, action='verify') }}">{{ csrf() }}<button class="btn btn-sm btn-spruce">Verify</button></form>
+        <form method="post" action="{{ url_for('admin_payment_action', payment_id=p.id, action='reject') }}">{{ csrf() }}<button class="btn btn-sm btn-outline-danger">Reject</button></form></div></div>
+    {% else %}<p class="text-muted mb-0">Nothing waiting for verification.</p>{% endfor %}</div></div>
+  <div class="col-12"><div class="panel"><h3>Latest bookings</h3><div class="table-responsive"><table class="table mb-0"><thead><tr><th>Booking</th><th>Customer</th><th>When</th><th>Status</th><th>Payment</th></tr></thead><tbody>
+    {% for a in recent %}<tr><td>{{ a.booking_no }}</td><td>{{ a.customer.name }}</td><td>{{ a.date|fdate }}, {{ a.time_label }}</td><td>{{ badge(a.status) }}</td><td>{{ badge(a.payment_status) }}</td></tr>
+    {% else %}<tr><td colspan="5" class="text-muted">No bookings yet.</td></tr>{% endfor %}</tbody></table></div></div></div>
+</div>
+{% endblock %}

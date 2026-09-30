@@ -1,0 +1,39 @@
+{% extends "admin/base.html" %}
+{% from "_macros.html" import csrf %}
+{% block admin %}
+<h1 class="mb-3" style="font-size:2.4rem">Salon settings</h1>
+<div class="row g-4"><div class="col-xl-8">
+<form method="post" enctype="multipart/form-data" class="panel">{{ csrf() }}
+  <h3>Salon</h3>
+  <div class="row g-3 mb-4">
+    <div class="col-md-6"><label class="form-label" for="salon_name">Salon name</label><input class="form-control" id="salon_name" name="salon_name" required maxlength="100" value="{{ site.salon_name }}"></div>
+    <div class="col-md-6"><label class="form-label" for="logo">Logo</label><input class="form-control" id="logo" type="file" name="logo" accept="image/png,image/jpeg,image/webp"></div>
+    <div class="col-12"><label class="form-label" for="tagline">Tagline</label><input class="form-control" id="tagline" name="tagline" maxlength="200" value="{{ site.tagline }}"></div>
+    <div class="col-12"><label class="form-label" for="about">About</label><textarea class="form-control" id="about" name="about" rows="3" maxlength="1000">{{ site.about }}</textarea></div>
+    <div class="col-12"><label class="form-label" for="address">Address</label><input class="form-control" id="address" name="address" maxlength="250" value="{{ site.address }}"></div>
+    <div class="col-md-6"><label class="form-label" for="phone">Phone</label><input class="form-control" id="phone" name="phone" value="{{ site.phone }}"></div>
+    <div class="col-md-6"><label class="form-label" for="email">Email</label><input class="form-control" id="email" type="email" name="email" value="{{ site.email }}"></div>
+  </div>
+  <h3>Hours</h3>
+  <div class="row g-3 mb-4">
+    <div class="col-md-3"><label class="form-label" for="open_time">Opens</label><input class="form-control" id="open_time" type="time" name="open_time" required value="{{ site.open_time }}"></div>
+    <div class="col-md-3"><label class="form-label" for="close_time">Closes</label><input class="form-control" id="close_time" type="time" name="close_time" required value="{{ site.close_time }}"></div>
+    <div class="col-12"><span class="form-label d-block">Weekly off days</span>
+      {% for name in DAY_NAMES %}<div class="form-check form-check-inline"><input class="form-check-input" type="checkbox" name="weekly_off" value="{{ loop.index0 }}" id="w{{ loop.index0 }}" {{ 'checked' if loop.index0 in site.off_days }}><label class="form-check-label" for="w{{ loop.index0 }}">{{ name[:3] }}</label></div>{% endfor %}</div>
+  </div>
+  <h3>Payments</h3>
+  <div class="row g-3">
+    <div class="col-md-6"><label class="form-label" for="upi_id">UPI ID</label><input class="form-control" id="upi_id" name="upi_id" maxlength="80" placeholder="yourname@bank" value="{{ site.upi_id }}"><div class="form-text">Leave empty to turn UPI off. Double-check it: customers pay this ID.</div></div>
+    <div class="col-md-3"><label class="form-label" for="advance_percent">Advance %</label><input class="form-control" id="advance_percent" type="number" min="0" max="100" step="1" name="advance_percent" value="{{ site.advance_percent|round(1) }}"></div>
+    <div class="col-md-3"><label class="form-label" for="tax_percent">Tax % (GST)</label><input class="form-control" id="tax_percent" type="number" min="0" max="100" step="0.01" name="tax_percent" value="{{ site.tax_percent|round(2) }}"></div>
+  </div>
+  <button class="btn btn-spruce mt-4">Save settings</button>
+</form></div>
+<div class="col-xl-4"><div class="panel"><h3>Holidays</h3><p class="text-muted small">No bookings can be made on these dates.</p>
+  <form method="post" action="{{ url_for('admin_holiday_add') }}" class="row g-2 mb-3">{{ csrf() }}
+    <div class="col-12"><input class="form-control" type="date" name="date" min="{{ today }}" required aria-label="Date"></div>
+    <div class="col-8"><input class="form-control" name="reason" placeholder="Reason" maxlength="120" aria-label="Reason"></div><div class="col-4 d-grid"><button class="btn btn-spruce">Add</button></div></form>
+  {% for h in holidays %}<div class="d-flex justify-content-between align-items-center border-top py-2"><div>{{ h.date|fdate }}<div class="small text-muted">{{ h.reason }}</div></div>
+    <form method="post" action="{{ url_for('admin_holiday_delete', holiday_id=h.id) }}">{{ csrf() }}<button class="btn btn-sm btn-outline-danger" aria-label="Remove holiday"><i class="bi bi-trash"></i></button></form></div>
+  {% else %}<p class="text-muted mb-0">No upcoming holidays.</p>{% endfor %}</div></div></div>
+{% endblock %}

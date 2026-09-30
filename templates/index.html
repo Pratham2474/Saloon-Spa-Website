@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% from "_macros.html" import svc_card, stars %}
+{% block content %}
+<section class="hero">
+  <div class="container py-5">
+    <div class="row align-items-center g-5 py-lg-4">
+      <div class="col-lg-7">
+        <h1>An hour that is only yours.</h1>
+        <p class="lead mt-3">Pick a treatment, choose your therapist, and see exactly which times are free. Pay by UPI and we'll have everything ready when you arrive.</p>
+        <div class="d-flex flex-wrap gap-2 mt-4">
+          <a href="{{ url_for('book') }}" class="btn btn-glow btn-lg">Book appointment</a>
+          <a href="{{ url_for('services') }}" class="btn btn-outline-light btn-lg">See services</a>
+        </div>
+        <div class="hero-facts">
+          <div><b>{{ all_services|length }}</b>treatments</div>
+          <div><b>{{ team|length }}</b>specialists</div>
+          <div><b>{{ '%.1f'|format(avg) if avg else 'New' }}</b>{{ 'average rating' if avg else 'reviews open' }}</div>
+        </div>
+      </div>
+      <div class="col-lg-5">
+        <form class="quick-book" action="{{ url_for('book') }}" method="get">
+          <h2>Find a time</h2>
+          <p class="text-muted small">Choose what you'd like and when. We'll show open slots next.</p>
+          <label class="form-label fw-semibold" for="qService">Service</label>
+          <select id="qService" name="service" class="form-select mb-3" required>
+            <option value="">Choose a service</option>
+            {% for c in categories %}{% if c.active_services %}<optgroup label="{{ c.name }}">
+              {% for s in c.active_services %}<option value="{{ s.id }}">{{ s.name }} ({{ s.duration }} min)</option>{% endfor %}
+            </optgroup>{% endif %}{% endfor %}
+          </select>
+          <label class="form-label fw-semibold" for="qDate">Date</label>
+          <input id="qDate" type="date" name="date" class="form-control mb-3" min="{{ today }}" value="{{ today }}">
+          <button class="btn btn-spruce w-100">Show available times</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="row g-4 align-items-center">
+      <div class="col-lg-5"><h2>Quiet rooms, unhurried hands</h2></div>
+      <div class="col-lg-7"><p class="text-muted fs-5 mb-0">{{ site.about }}</p></div>
+    </div>
+    <div class="row g-3 mt-3">
+      {% for c in categories %}<div class="col-6 col-md-4 col-lg-2"><a class="cat-tile" href="{{ url_for('services', category=c.id) }}"><i class="bi {{ c.icon }}"></i>{{ c.name }}</a></div>{% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-end section-head mb-4 w-100" style="max-width:none">
+      <div><h2 class="mb-1">Popular treatments</h2><p class="text-muted mb-0">One from each menu to get you started.</p></div>
+      <a href="{{ url_for('services') }}" class="btn btn-outline-spruce d-none d-md-inline-block">Full menu</a>
+    </div>
+    <div class="row g-4">{% for s in featured %}<div class="col-md-6 col-lg-4">{{ svc_card(s) }}</div>{% endfor %}</div>
+  </div>
+</section>
+
+{% if offers %}
+<section class="section">
+  <div class="container">
+    <div class="section-head"><h2>Current offers</h2><p class="text-muted">Discounted prices are applied automatically when you book. New here? Use code <strong>WELCOME10</strong> at checkout for 10% off bookings above &#8377;500.</p></div>
+    <div class="row g-4">{% for s in offers %}<div class="col-md-6 col-lg-3">{{ svc_card(s) }}</div>{% endfor %}</div>
+  </div>
+</section>
+{% endif %}
+
+<section class="section section-alt">
+  <div class="container">
+    <div class="section-head"><h2>Meet the team</h2><p class="text-muted">Choose the person you'd like to see when you book.</p></div>
+    <div class="row g-4 text-center">
+      {% for m in team %}<div class="col-6 col-md-4 col-lg">
+        {% if m.photo %}<img class="avatar" src="{{ url_for('static', filename='uploads/' + m.photo) }}" alt="{{ m.name }}">{% else %}<div class="avatar">{{ m.name[0] }}</div>{% endif %}
+        <strong>{{ m.name }}</strong><div class="text-muted small">{{ m.designation }}</div>
+      </div>{% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head"><h2>What clients say</h2></div>
+    {% if reviews %}
+    <div class="row g-4">{% for r in reviews %}<div class="col-md-6 col-lg-4"><div class="review-card">
+      {{ stars(r.rating) }}<p class="mt-2">{{ r.text or 'A wonderful visit.' }}</p>
+      <small class="text-muted">{{ r.user.name.split()[0] }} &middot; {{ r.appointment.service_names }}</small></div></div>{% endfor %}</div>
+    {% else %}<div class="panel text-muted">Reviews from completed appointments will show up here.</div>{% endif %}
+  </div>
+</section>
+
+{% if gallery %}
+<section class="section section-alt">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-end mb-4"><h2 class="mb-0">Inside the salon</h2><a href="{{ url_for('gallery') }}" class="btn btn-outline-spruce">View gallery</a></div>
+    <div class="gallery-grid">{% for g in gallery %}<figure><img src="{{ url_for('static', filename='uploads/' + g.image) }}" alt="{{ g.title }}" loading="lazy">{% if g.title %}<figcaption>{{ g.title }}</figcaption>{% endif %}</figure>{% endfor %}</div>
+  </div>
+</section>
+{% endif %}
+
+<section class="section" id="contact">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-lg-5"><h2>Find us</h2>
+        <p class="text-muted">Walk-ins are welcome when a therapist is free, but booking guarantees your time.</p>
+        <a href="{{ url_for('book') }}" class="btn btn-glow">Book appointment</a></div>
+      <div class="col-lg-7"><div class="panel">
+        <div class="row g-3">
+          <div class="col-sm-6"><i class="bi bi-geo-alt me-2"></i>{{ site.address }}</div>
+          <div class="col-sm-6"><i class="bi bi-telephone me-2"></i><a href="tel:{{ site.phone }}">{{ site.phone }}</a></div>
+          <div class="col-sm-6"><i class="bi bi-envelope me-2"></i><a href="mailto:{{ site.email }}">{{ site.email }}</a></div>
+          <div class="col-sm-6"><i class="bi bi-clock me-2"></i>{{ site.open_time }} to {{ site.close_time }}{% if site.off_days %}, closed {% for d in site.off_days %}{{ DAY_NAMES[d] }}{{ ", " if not loop.last }}{% endfor %}{% endif %}</div>
+        </div></div></div>
+    </div>
+  </div>
+</section>
+{% endblock %}

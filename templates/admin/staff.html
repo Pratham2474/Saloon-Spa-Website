@@ -1,0 +1,15 @@
+{% extends "admin/base.html" %}
+{% from "_macros.html" import csrf %}
+{% block admin %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2"><h1 class="mb-0" style="font-size:2.4rem">Staff</h1><a class="btn btn-glow" href="{{ url_for('admin_staff_form') }}">Add staff member</a></div>
+<div class="panel table-responsive"><table class="table mb-0"><thead><tr><th>Name</th><th>Contact</th><th>Days and hours</th><th>Services</th><th>Status</th><th></th></tr></thead><tbody>
+{% for m in items %}<tr>
+  <td><strong>{{ m.name }}</strong><div class="small text-muted">{{ m.designation }}</div></td>
+  <td>{{ m.phone }}<div class="small text-muted">{{ m.email }}</div></td>
+  <td>{% for d in m.days_list %}{{ DAY_NAMES[d][:3] }}{{ ', ' if not loop.last }}{% endfor %}<div class="small text-muted">{{ m.start_time }} to {{ m.end_time }}</div></td>
+  <td>{{ m.services|length }} services</td>
+  <td><span class="badge text-bg-{{ 'success' if m.active else 'secondary' }}">{{ 'Active' if m.active else 'Inactive' }}</span></td>
+  <td class="text-nowrap d-flex gap-1"><a class="btn btn-sm btn-outline-spruce" href="{{ url_for('admin_staff_form', staff_id=m.id) }}">Edit</a>
+    <form method="post" action="{{ url_for('admin_staff_delete', staff_id=m.id) }}" onsubmit="return confirm('Delete this staff member?')">{{ csrf() }}<button class="btn btn-sm btn-outline-danger">Delete</button></form></td>
+</tr>{% else %}<tr><td colspan="6" class="text-muted">No staff yet.</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

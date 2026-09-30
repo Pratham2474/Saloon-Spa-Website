@@ -1,0 +1,12 @@
+{% extends "admin/base.html" %}
+{% from "_macros.html" import csrf, badge, stars %}
+{% block admin %}
+<h1 class="mb-3" style="font-size:2.4rem">Reviews</h1>
+{% for r in items %}<div class="panel mb-3"><div class="d-flex flex-wrap justify-content-between gap-2">
+  <div>{{ stars(r.rating) }} {{ badge(r.status) }}<div class="fw-semibold mt-1">{{ r.user.name }}</div><div class="small text-muted">{{ r.appointment.service_names }} &middot; {{ r.appointment.booking_no }}</div><p class="mt-2 mb-0">{{ r.text or '(no text)' }}</p></div>
+  <div class="d-flex gap-1 align-items-start">
+    {% if r.status != 'Approved' %}<form method="post" action="{{ url_for('admin_review_action', review_id=r.id, action='approve') }}">{{ csrf() }}<button class="btn btn-sm btn-spruce">Approve</button></form>{% endif %}
+    {% if r.status != 'Hidden' %}<form method="post" action="{{ url_for('admin_review_action', review_id=r.id, action='hide') }}">{{ csrf() }}<button class="btn btn-sm btn-outline-spruce">Hide</button></form>{% endif %}
+    <form method="post" action="{{ url_for('admin_review_action', review_id=r.id, action='delete') }}" onsubmit="return confirm('Delete review?')">{{ csrf() }}<button class="btn btn-sm btn-outline-danger">Delete</button></form></div></div></div>
+{% else %}<div class="panel text-muted">No reviews yet. Customers can review after an appointment is marked Completed.</div>{% endfor %}
+{% endblock %}

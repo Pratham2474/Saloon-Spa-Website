@@ -1,0 +1,8 @@
+venv/
+__pycache__/
+*.pyc
+.env
+.secret_key
+salon.db
+private_uploads/*
+!private_uploads/.gitkeep

@@ -1,0 +1,27 @@
+{% extends "admin/base.html" %}
+{% from "_macros.html" import csrf %}
+{% block admin %}
+<h1 class="mb-3" style="font-size:2.4rem">{{ 'Edit' if m else 'Add' }} staff member</h1>
+{% set post = request.method == 'POST' %}
+<form method="post" enctype="multipart/form-data" class="panel" style="max-width:820px">{{ csrf() }}
+  <div class="row g-3">
+    <div class="col-md-6"><label class="form-label" for="name">Name</label><input class="form-control" id="name" name="name" required maxlength="100" value="{{ request.form.get('name') if post else (m.name if m else '') }}"></div>
+    <div class="col-md-6"><label class="form-label" for="designation">Designation</label><input class="form-control" id="designation" name="designation" maxlength="100" value="{{ request.form.get('designation') if post else (m.designation if m else '') }}"></div>
+    <div class="col-md-6"><label class="form-label" for="phone">Phone</label><input class="form-control" id="phone" name="phone" value="{{ request.form.get('phone') if post else (m.phone if m else '') }}"></div>
+    <div class="col-md-6"><label class="form-label" for="email">Email</label><input class="form-control" id="email" type="email" name="email" value="{{ request.form.get('email') if post else (m.email if m else '') }}"></div>
+    <div class="col-md-6"><label class="form-label" for="photo">Photo</label><input class="form-control" id="photo" type="file" name="photo" accept="image/png,image/jpeg,image/webp"></div>
+    <div class="col-md-6 d-flex align-items-end"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" id="active" name="active" {{ 'checked' if (not m) or m.active }}><label class="form-check-label" for="active">Active (can be booked)</label></div></div>
+    <div class="col-12"><span class="form-label d-block">Working days</span>
+      {% set days = (request.form.getlist('days') if post else (m.working_days.split(',') if m else ['0','1','2','3','4','5'])) %}
+      {% for name in DAY_NAMES %}<div class="form-check form-check-inline"><input class="form-check-input" type="checkbox" name="days" value="{{ loop.index0 }}" id="d{{ loop.index0 }}" {{ 'checked' if loop.index0|string in days }}><label class="form-check-label" for="d{{ loop.index0 }}">{{ name[:3] }}</label></div>{% endfor %}</div>
+    <div class="col-md-3"><label class="form-label" for="start_time">Starts</label><input class="form-control" id="start_time" type="time" name="start_time" required value="{{ request.form.get('start_time') if post else (m.start_time if m else '10:00') }}"></div>
+    <div class="col-md-3"><label class="form-label" for="end_time">Ends</label><input class="form-control" id="end_time" type="time" name="end_time" required value="{{ request.form.get('end_time') if post else (m.end_time if m else '19:00') }}"></div>
+    <div class="col-12"><span class="form-label d-block">Services this person can perform</span>
+      {% set chosen = (request.form.getlist('services') if post else (m.services|map(attribute='id')|map('string')|list if m else [])) %}
+      {% for c in categories %}{% if c.services %}<div class="mt-2"><strong>{{ c.name }}</strong><div class="row">
+        {% for s in c.services %}<div class="col-md-6"><div class="form-check"><input class="form-check-input" type="checkbox" name="services" value="{{ s.id }}" id="s{{ s.id }}" {{ 'checked' if s.id|string in chosen }}><label class="form-check-label" for="s{{ s.id }}">{{ s.name }}</label></div></div>{% endfor %}
+      </div></div>{% endif %}{% endfor %}</div>
+  </div>
+  <button class="btn btn-spruce mt-4">Save staff member</button> <a class="btn btn-link mt-4" href="{{ url_for('admin_staff') }}">Cancel</a>
+</form>
+{% endblock %}

@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, badge %}
+{% block title %}My account | {{ site.salon_name }}{% endblock %}
+
+{% macro appt_card(a, past=False) %}
+<div class="panel mb-3">
+  <div class="d-flex flex-wrap justify-content-between gap-2">
+    <div>
+      <div class="fw-bold fs-5">{{ a.service_names }}</div>
+      <div class="text-muted">{{ a.date|fdate }}, {{ a.time_label }} to {{ a.end_label }} with {{ a.staff.name }}</div>
+      <small class="text-muted">{{ a.booking_no }}</small>
+    </div>
+    <div class="text-end">{{ badge(a.status) }} {{ badge(a.payment_status) }}
+      <div class="fw-bold mt-1">&#8377;{{ a.total|money }}{% if a.remaining and a.status not in ['Cancelled','No-show'] %} <small class="text-muted fw-normal">(due &#8377;{{ a.remaining|money }})</small>{% endif %}</div></div>
+  </div>
+  <div class="d-flex flex-wrap gap-2 mt-3">
+    <a class="btn btn-sm btn-outline-spruce" href="{{ url_for('invoice', appt_id=a.id) }}" target="_blank">View invoice</a>
+    <a class="btn btn-sm btn-outline-spruce" href="{{ url_for('invoice', appt_id=a.id, dl=1) }}">Download PDF</a>
+    {% if a.remaining and a.status in ['Pending','Confirmed','Rescheduled'] %}<a class="btn btn-sm btn-glow" href="{{ url_for('checkout', appt_id=a.id) }}">Pay now</a>{% endif %}
+    {% if a.can_modify %}
+      <a class="btn btn-sm btn-outline-spruce" href="{{ url_for('reschedule', appt_id=a.id) }}">Reschedule</a>
+      <form method="post" action="{{ url_for('cancel_appointment', appt_id=a.id) }}" onsubmit="return confirm('Cancel this appointment?')">{{ csrf() }}<button class="btn btn-sm btn-outline-danger">Cancel</button></form>
+    {% endif %}
+    {% if a.status == 'Completed' and not a.review %}<a class="btn btn-sm btn-spruce" href="{{ url_for('review', appt_id=a.id) }}">Write a review</a>{% endif %}
+    {% if a.review %}<small class="align-self-center text-muted">Review: {{ a.review.status }}</small>{% endif %}
+  </div>
+</div>
+{% endmacro %}
+
+{% block content %}
+<section class="section"><div class="container">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <h1 style="font-size:clamp(2rem,4vw,2.8rem)">Hello, {{ current_user.name.split()[0] }}</h1>
+    <a class="btn btn-glow" href="{{ url_for('book') }}">Book appointment</a>
+  </div>
+  <ul class="nav nav-pills gap-2 mb-4" role="tablist">
+    <li class="nav-item"><button class="chip active" data-bs-toggle="pill" data-bs-target="#tab-up" type="button">Upcoming ({{ upcoming|length }})</button></li>
+    <li class="nav-item"><button class="chip" data-bs-toggle="pill" data-bs-target="#tab-past" type="button">Past</button></li>
+    <li class="nav-item"><button class="chip" data-bs-toggle="pill" data-bs-target="#tab-pay" type="button">Payments</button></li>
+    <li class="nav-item"><button class="chip" data-bs-toggle="pill" data-bs-target="#profile" type="button">Profile</button></li>
+  </ul>
+  <div class="tab-content">
+    <div class="tab-pane fade show active" id="tab-up">
+      {% for a in upcoming %}{{ appt_card(a) }}{% else %}<div class="panel text-center py-5"><p>No upcoming appointments.</p><a class="btn btn-spruce" href="{{ url_for('services') }}">Browse services</a></div>{% endfor %}
+    </div>
+    <div class="tab-pane fade" id="tab-past">{% for a in past %}{{ appt_card(a, True) }}{% else %}<div class="panel text-muted">Nothing here yet.</div>{% endfor %}</div>
+    <div class="tab-pane fade" id="tab-pay">
+      {% if payments %}<div class="panel table-responsive"><table class="table mb-0"><thead><tr><th>Date</th><th>Booking</th><th>Method</th><th>Type</th><th>UTR</th><th class="text-end">Amount</th><th>Status</th><th></th></tr></thead><tbody>
+        {% for p in payments %}<tr><td>{{ p.created_at.strftime('%d %b %Y') }}</td><td>{{ p.appointment.booking_no }}</td><td>{{ p.method }}</td><td>{{ p.kind }}</td><td>{{ p.utr or '-' }}</td>
+          <td class="text-end">&#8377;{{ p.amount|money }}</td><td>{{ badge(p.status) }}</td>
+          <td>{% if p.method == 'UPI' and p.status in ['Pending','Failed'] %}<a href="{{ url_for('pay', payment_id=p.id) }}">Enter UTR</a>{% endif %}</td></tr>{% endfor %}
+      </tbody></table></div>{% else %}<div class="panel text-muted">No payments yet.</div>{% endif %}
+    </div>
+    <div class="tab-pane fade" id="profile"><div class="panel" style="max-width:560px">
+      <form method="post" action="{{ url_for('profile') }}">{{ csrf() }}
+        <label class="form-label" for="pname">Name</label><input class="form-control mb-3" id="pname" name="name" value="{{ current_user.name }}" required>
+        <label class="form-label">Email</label><input class="form-control mb-3" value="{{ current_user.email }}" disabled>
+        <label class="form-label" for="pphone">Phone</label><input class="form-control mb-4" id="pphone" name="phone" value="{{ current_user.phone }}" required>
+        <h4>Change password <small class="text-muted fs-6">(optional)</small></h4>
+        <input class="form-control mb-2" type="password" name="current_password" placeholder="Current password" autocomplete="current-password">
+        <input class="form-control mb-4" type="password" name="new_password" placeholder="New password (8+ characters)" autocomplete="new-password">
+        <button class="btn btn-spruce">Save changes</button>
+      </form></div></div>
+  </div>
+</div></section>
+{% endblock %}
+{% block scripts %}<script>
+  (function(){var h=location.hash;if(!h)return;var b=document.querySelector('[data-bs-target="'+h+'"]');if(b)bootstrap.Tab.getOrCreateInstance(b).show();})();
+</script>{% endblock %}

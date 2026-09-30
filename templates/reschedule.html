@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}Reschedule | {{ site.salon_name }}{% endblock %}
+{% block content %}
+<section class="section"><div class="container" style="max-width:760px">
+  <h1 style="font-size:clamp(2rem,4vw,2.8rem)">Reschedule</h1>
+  <div class="panel my-4"><div class="fw-bold fs-5">{{ a.service_names }}</div>
+    <div class="text-muted">Currently {{ a.date|fdate }}, {{ a.time_label }} with {{ a.staff.name }} ({{ a.booking_no }})</div></div>
+  <form id="rescheduleForm" method="post" data-id="{{ a.id }}" data-slots-url="{{ url_for('api_slots') }}">{{ csrf() }}
+    <input type="hidden" name="start" id="startInput">
+    <div class="panel">
+      <label class="form-label" for="dateInput">New date</label>
+      <input class="form-control mb-3" style="max-width:260px" type="date" id="dateInput" name="date" min="{{ today }}" max="{{ max_date }}" required>
+      <div id="slotBox"><p class="text-muted mb-0">Choose a date to see free times.</p></div>
+    </div>
+    <button class="btn btn-glow mt-3" id="submitBtn" disabled>Confirm new time</button>
+    <a class="btn btn-link mt-3" href="{{ url_for('dashboard') }}">Keep current time</a>
+  </form>
+</div></section>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/reschedule.js') }}"></script>{% endblock %}

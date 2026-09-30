@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}Create account | {{ site.salon_name }}{% endblock %}
+{% block content %}
+<div class="container"><div class="auth-card panel">
+  <h2>Create your account</h2>
+  <form method="post" class="mt-3">{{ csrf() }}
+    <label class="form-label" for="name">Full name</label><input class="form-control mb-3" id="name" name="name" value="{{ form.get('name','') }}" required maxlength="100" autocomplete="name">
+    <label class="form-label" for="email">Email</label><input class="form-control mb-3" id="email" type="email" name="email" value="{{ form.get('email','') }}" required autocomplete="email">
+    <label class="form-label" for="phone">Phone</label><input class="form-control mb-3" id="phone" type="tel" name="phone" value="{{ form.get('phone','') }}" required placeholder="+91 98765 43210" autocomplete="tel">
+    <label class="form-label" for="password">Password <small class="text-muted">(8+ characters)</small></label><input class="form-control mb-3" id="password" type="password" name="password" required minlength="8" autocomplete="new-password">
+    <label class="form-label" for="confirm">Confirm password</label><input class="form-control mb-4" id="confirm" type="password" name="confirm" required minlength="8" autocomplete="new-password">
+    <button class="btn btn-spruce w-100">Create account</button>
+  </form>
+  <p class="text-center mt-3 mb-0 text-muted">Already registered? <a href="{{ url_for('login') }}">Log in</a></p>
+</div></div>
+{% endblock %}

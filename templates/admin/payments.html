@@ -1,0 +1,17 @@
+{% extends "admin/base.html" %}
+{% from "_macros.html" import csrf, badge %}
+{% block admin %}
+<h1 class="mb-3" style="font-size:2.4rem">Payments</h1>
+<div class="d-flex flex-wrap gap-2 mb-3"><a class="chip {{ 'active' if not status }}" href="{{ url_for('admin_payments') }}">All</a>
+  {% for s in ['Pending','Submitted','Verified','Failed','Refunded'] %}<a class="chip {{ 'active' if s == status }}" href="{{ url_for('admin_payments', status=s) }}">{{ s }}</a>{% endfor %}</div>
+<div class="alert alert-info py-2">UPI payments are never marked successful automatically. Check your bank or UPI app for the UTR, then verify.</div>
+<div class="panel table-responsive"><table class="table mb-0"><thead><tr><th>Date</th><th>Booking</th><th>Customer</th><th>Method</th><th>UTR</th><th class="text-end">Amount</th><th>Status</th><th>Actions</th></tr></thead><tbody>
+{% for p in items %}<tr><td>{{ p.created_at.strftime('%d %b, %H:%M') }}</td><td>{{ p.appointment.booking_no }}<div class="small text-muted">{{ p.kind }}</div></td><td>{{ p.appointment.customer.name }}</td><td>{{ p.method }}</td>
+  <td>{{ p.utr or '-' }}{% if p.proof %}<div><a target="_blank" href="{{ url_for('proof', payment_id=p.id) }}">Screenshot</a></div>{% endif %}</td>
+  <td class="text-end">&#8377;{{ p.amount|money }}</td><td>{{ badge(p.status) }}</td>
+  <td><div class="d-flex flex-wrap gap-1">
+    {% if p.status in ['Pending','Submitted','Failed'] %}<form method="post" action="{{ url_for('admin_payment_action', payment_id=p.id, action='verify') }}">{{ csrf() }}<button class="btn btn-sm btn-spruce">Verify</button></form>{% endif %}
+    {% if p.status in ['Pending','Submitted'] %}<form method="post" action="{{ url_for('admin_payment_action', payment_id=p.id, action='reject') }}">{{ csrf() }}<button class="btn btn-sm btn-outline-danger">Reject</button></form>{% endif %}
+    {% if p.status == 'Verified' %}<form method="post" action="{{ url_for('admin_payment_action', payment_id=p.id, action='refund') }}" onsubmit="return confirm('Mark as refunded? Refund the money yourself first.')">{{ csrf() }}<button class="btn btn-sm btn-outline-spruce">Refunded</button></form>{% endif %}
+  </div></td></tr>{% else %}<tr><td colspan="8" class="text-muted">No payments found.</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

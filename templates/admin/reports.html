@@ -1,0 +1,21 @@
+{% extends "admin/base.html" %}
+{% from "_macros.html" import badge %}
+{% block admin %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2"><h1 class="mb-0" style="font-size:2.4rem">Reports</h1>
+  <form method="get" class="d-flex gap-2"><input class="form-control" type="month" name="month" value="{{ month }}" aria-label="Month"><button class="btn btn-spruce">Show</button>
+    <a class="btn btn-outline-spruce text-nowrap" href="{{ url_for('admin_export', month=month) }}">Export CSV</a></form></div>
+<div class="row g-3 mb-4">
+  <div class="col-md-4"><div class="stat"><div class="num">&#8377;{{ month_total|money }}</div><div class="lbl">Verified revenue, {{ month_label }}</div></div></div>
+  <div class="col-md-4"><div class="stat"><div class="num">{{ booking_count }}</div><div class="lbl">Bookings, {{ month_label }}</div></div></div>
+  <div class="col-md-4"><div class="stat"><div class="num">{{ status_counts['Completed'] }}</div><div class="lbl">Completed, {{ month_label }}</div></div></div></div>
+<div class="row g-4">
+  <div class="col-lg-6"><div class="panel"><h3>Revenue, last 6 months</h3>
+    {% set mx = (months|map(attribute=1)|max) or 1 %}{% for label, amt in months %}<div class="bar-row"><span class="lab">{{ label }}</span><span class="bar" style="width:{{ (amt / mx * 100)|round|int }}%"></span><span>&#8377;{{ amt|money }}</span></div>{% endfor %}</div></div>
+  <div class="col-lg-6"><div class="panel"><h3>Daily revenue, {{ month_label }}</h3>
+    {% if by_day %}{% set dmx = (by_day|map(attribute=1)|max) or 1 %}{% for day, amt in by_day %}<div class="bar-row"><span class="lab">Day {{ day }}</span><span class="bar" style="width:{{ (amt / dmx * 100)|round|int }}%"></span><span>&#8377;{{ amt|money }}</span></div>{% endfor %}
+    {% else %}<p class="text-muted mb-0">No verified payments this month.</p>{% endif %}</div></div>
+  <div class="col-lg-4"><div class="panel"><h3>Bookings by status</h3>{% for s, n in status_counts.items() %}<div class="d-flex justify-content-between py-1">{{ badge(s) }}<b>{{ n }}</b></div>{% endfor %}</div></div>
+  <div class="col-lg-4"><div class="panel"><h3>Popular services</h3>{% for name, n in popular %}<div class="d-flex justify-content-between py-1"><span>{{ name }}</span><b>{{ n }}</b></div>{% else %}<p class="text-muted mb-0">No bookings yet.</p>{% endfor %}</div></div>
+  <div class="col-lg-4"><div class="panel"><h3>Payments by status</h3>{% for s in ['Pending','Submitted','Verified','Failed','Refunded'] %}<div class="d-flex justify-content-between py-1">{{ badge(s) }}<b>{{ pay_counts.get(s, 0) }}</b></div>{% endfor %}</div></div>
+</div>
+{% endblock %}

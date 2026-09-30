@@ -1,0 +1,75 @@
+{% from "_macros.html" import csrf %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ site.salon_name }}{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+</head>
+<body>
+{% block nav %}
+<nav class="navbar navbar-expand-lg site-nav sticky-top">
+  <div class="container">
+    <a class="navbar-brand d-flex align-items-center" href="{{ url_for('index') }}">
+      {% if site.logo %}<img src="{{ url_for('static', filename='uploads/' + site.logo) }}" alt="" height="36" class="me-2">
+      {% else %}<span class="brand-mark"><i class="bi bi-flower2"></i></span>{% endif %}
+      {{ site.salon_name }}
+    </a>
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-label="Menu"><i class="bi bi-list fs-2"></i></button>
+    <div class="collapse navbar-collapse" id="mainNav">
+      <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-1">
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('index') }}">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('services') }}">Services</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('gallery') }}">Gallery</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('index') }}#contact">Contact</a></li>
+        {% if current_user.is_authenticated %}
+          {% if current_user.is_admin %}<li class="nav-item"><a class="nav-link" href="{{ url_for('admin_dashboard') }}">Admin</a></li>{% endif %}
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard') }}">My account</a></li>
+          <li class="nav-item"><form method="post" action="{{ url_for('logout') }}">{{ csrf() }}<button class="nav-link btn btn-link">Log out</button></form></li>
+        {% else %}
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}">Log in</a></li>
+        {% endif %}
+        <li class="nav-item ms-lg-2"><a class="btn btn-glow" href="{{ url_for('book') }}">Book appointment</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+{% endblock %}
+
+{% block flashes %}
+<div class="container mt-3">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+      <div class="alert alert-{{ cat if cat in ['success','danger','warning','info'] else 'info' }} alert-dismissible fade show" role="alert">
+        {{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+  {% endwith %}
+</div>
+{% endblock %}
+
+{% block content %}{% endblock %}
+
+{% block footer %}
+<footer class="site-footer">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-md-5"><h4>{{ site.salon_name }}</h4><p>{{ site.tagline }}</p></div>
+      <div class="col-6 col-md-3"><h4>Explore</h4>
+        <a href="{{ url_for('services') }}">Services</a><br><a href="{{ url_for('gallery') }}">Gallery</a><br><a href="{{ url_for('book') }}">Book online</a></div>
+      <div class="col-6 col-md-4"><h4>Visit us</h4>{{ site.address }}<br>{{ site.phone }}<br>{{ site.email }}</div>
+    </div>
+    <hr style="border-color:rgba(255,255,255,.15)"><small>&copy; {{ today.year }} {{ site.salon_name }}</small>
+  </div>
+</footer>
+{% endblock %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

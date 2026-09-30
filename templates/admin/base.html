@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}Admin | {{ site.salon_name }}{% endblock %}
+{% block nav %}{% endblock %}
+{% block footer %}{% endblock %}
+{% block flashes %}{% endblock %}
+{% block content %}
+{% set ep = request.endpoint or '' %}
+{% set links = [
+  ('admin_dashboard','bi-speedometer2','Dashboard','admin_dashboard'),
+  ('admin_appointments','bi-calendar-check','Appointments','admin_appointment'),
+  ('admin_customers','bi-people','Customers','admin_customer'),
+  ('admin_services','bi-scissors','Services','admin_service'),
+  ('admin_staff','bi-person-badge','Staff','admin_staff'),
+  ('admin_payments','bi-wallet2','Payments','admin_payment'),
+  ('admin_coupons','bi-ticket-perforated','Coupons','admin_coupon'),
+  ('admin_reviews','bi-star','Reviews','admin_review'),
+  ('admin_gallery','bi-images','Gallery','admin_gallery'),
+  ('admin_reports','bi-bar-chart','Reports','admin_report'),
+  ('admin_settings','bi-gear','Settings','admin_settings')] %}
+<div class="admin-top no-print"><strong class="display-font fs-4">{{ site.salon_name }}</strong>
+  <button class="btn btn-sm btn-outline-light" type="button" onclick="document.getElementById('adminSide').classList.toggle('open')"><i class="bi bi-list"></i> Menu</button></div>
+<div class="admin-shell">
+  <aside class="admin-side no-print" id="adminSide">
+    <a class="brand" href="{{ url_for('admin_dashboard') }}">{{ site.salon_name }}</a>
+    {% for endpoint, icon, label, prefix in links %}
+      <a class="nav-item {{ 'active' if ep.startswith(prefix) }}" href="{{ url_for(endpoint) }}"><i class="bi {{ icon }}"></i>{{ label }}</a>
+    {% endfor %}
+    <hr style="border-color:rgba(255,255,255,.15)">
+    <a class="nav-item" href="{{ url_for('index') }}"><i class="bi bi-box-arrow-up-right"></i>View website</a>
+    <form method="post" action="{{ url_for('logout') }}">{{ csrf() }}<button class="nav-item btn btn-link text-start w-100" style="color:#C9D6D2;text-decoration:none;display:flex;gap:.7rem;padding:.6rem .8rem"><i class="bi bi-box-arrow-left"></i>Log out</button></form>
+  </aside>
+  <main class="admin-main">
+    {% with messages = get_flashed_messages(with_categories=true) %}{% for cat, msg in messages %}
+      <div class="alert alert-{{ cat if cat in ['success','danger','warning','info'] else 'info' }} alert-dismissible fade show">{{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>
+    {% endfor %}{% endwith %}
+    {% block admin %}{% endblock %}
+  </main>
+</div>
+{% endblock %}

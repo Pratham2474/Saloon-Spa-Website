@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, badge %}
+{% block title %}Payment | {{ site.salon_name }}{% endblock %}
+{% block content %}
+<section class="section"><div class="container" style="max-width:900px">
+  <h1 style="font-size:clamp(2rem,4vw,2.8rem)">Payment</h1>
+  <div class="panel my-4">
+    <div class="d-flex flex-wrap justify-content-between gap-2"><div><div class="fw-bold fs-5">{{ a.service_names }}</div>
+      <div class="text-muted">{{ a.date|fdate }}, {{ a.time_label }} with {{ a.staff.name }}</div><small class="text-muted">{{ a.booking_no }}</small></div>
+      <div class="text-end">{{ badge(a.status) }} {{ badge(a.payment_status) }}</div></div>
+    <hr>
+    <div class="row g-2"><div class="col-6">Subtotal</div><div class="col-6 text-end">&#8377;{{ a.subtotal|money }}</div>
+      {% if a.discount %}<div class="col-6">Discount {{ '(' ~ a.coupon_code ~ ')' if a.coupon_code }}</div><div class="col-6 text-end">- &#8377;{{ a.discount|money }}</div>{% endif %}
+      {% if a.tax %}<div class="col-6">Tax</div><div class="col-6 text-end">&#8377;{{ a.tax|money }}</div>{% endif %}
+      <div class="col-6 fw-bold">Total</div><div class="col-6 text-end fw-bold">&#8377;{{ a.total|money }}</div>
+      <div class="col-6">Paid so far (verified)</div><div class="col-6 text-end">&#8377;{{ a.paid_amount|money }}</div>
+      <div class="col-6 fw-bold">Remaining</div><div class="col-6 text-end fw-bold">&#8377;{{ a.remaining|money }}</div></div>
+  </div>
+  {% if open_ok %}
+  <form method="post">{{ csrf() }}
+    <div class="row g-3">
+      {% if site.upi_id %}
+      <div class="col-md-4"><label class="pick h-100"><input type="radio" name="choice" value="full" required><span class="pick-body h-100"><span><strong>Pay full amount</strong><small class="d-block text-muted">UPI QR</small><span class="price fs-5">&#8377;{{ outstanding|money }}</span></span></span></label></div>
+      <div class="col-md-4"><label class="pick h-100"><input type="radio" name="choice" value="advance"><span class="pick-body h-100"><span><strong>Pay advance</strong><small class="d-block text-muted">{{ site.advance_percent|round(0)|int }}% now, rest at salon</small><span class="price fs-5">&#8377;{{ advance|money }}</span></span></span></label></div>
+      {% endif %}
+      <div class="col-md-4"><label class="pick h-100"><input type="radio" name="choice" value="salon" {{ 'required' if not site.upi_id }}><span class="pick-body h-100"><span><strong>Pay at salon</strong><small class="d-block text-muted">Cash or card on the day</small><span class="price fs-5">&#8377;{{ outstanding|money }}</span></span></span></label></div>
+    </div>
+    {% if not site.upi_id %}<p class="text-muted small mt-2">Online UPI payment isn't set up yet, so payment is at the salon.</p>{% endif %}
+    <button class="btn btn-glow btn-lg mt-4">Continue</button> <a href="{{ url_for('dashboard') }}" class="btn btn-link">Decide later</a>
+  </form>
+  {% else %}<div class="alert alert-info">Nothing is due for this booking right now.</div><a class="btn btn-spruce" href="{{ url_for('dashboard') }}">Go to my account</a>{% endif %}
+</div></section>
+{% endblock %}

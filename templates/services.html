@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% from "_macros.html" import svc_card %}
+{% block title %}Services | {{ site.salon_name }}{% endblock %}
+{% block content %}
+<section class="section pb-0"><div class="container">
+  <h1 class="mb-3" style="font-size:clamp(2.2rem,4vw,3.2rem)">Our services</h1>
+  <form class="row g-2 mb-3" method="get">
+    <div class="col-md-6"><input class="form-control" type="search" name="q" value="{{ q }}" placeholder="Search massage, facial, haircut..." aria-label="Search services"></div>
+    <div class="col-md-4"><select class="form-select" name="category" aria-label="Category">
+      <option value="">All categories</option>{% for c in categories %}<option value="{{ c.id }}" {{ 'selected' if c.id == cat_id }}>{{ c.name }}</option>{% endfor %}</select></div>
+    <div class="col-md-2 d-grid"><button class="btn btn-spruce">Search</button></div>
+  </form>
+  <div class="d-flex flex-wrap gap-2 mb-4">
+    <a class="chip {{ 'active' if not cat_id }}" href="{{ url_for('services') }}">All</a>
+    {% for c in categories %}<a class="chip {{ 'active' if c.id == cat_id }}" href="{{ url_for('services', category=c.id) }}"><i class="bi {{ c.icon }}"></i>{{ c.name }}</a>{% endfor %}
+  </div>
+</div></section>
+<section class="section pt-0"><div class="container">
+  {% if items %}<div class="row g-4">{% for s in items %}<div class="col-md-6 col-lg-4">{{ svc_card(s) }}</div>{% endfor %}</div>
+  {% else %}<div class="panel text-center py-5"><p class="mb-3">No services match your search.</p><a class="btn btn-outline-spruce" href="{{ url_for('services') }}">Clear filters</a></div>{% endif %}
+</div></section>
+{% endblock %}
